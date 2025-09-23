@@ -30,11 +30,15 @@ async function seedAdmin() {
       data: {
         email: adminEmail,
         password: hashedPassword,
-        role: 'ADMIN',
+        role: 'admin',
         isEmailVerified: true,
+        fullName: 'Admin User', // Added to satisfy UserCreateInput
+        username: 'admin_user', // Added to satisfy UserCreateInput
+        referralCode: 'ADMINREF', // Added to satisfy UserCreateInput
         wallet: {
           create: {
-            balance: 0
+            balance: 0,
+            depositAddress: 'admin_deposit_address_placeholder' // Placeholder, consider generating a real one in a production setup
           }
         }
       }

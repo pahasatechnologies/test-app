@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, CheckCircle, XCircle, User, Wallet } from 'lucide-react';
 import { adminService } from '@/lib/admin';
-import { authService } from '@/lib/auth';
-import { formatCurrency, formatDate, truncateAddress } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import { PendingWithdrawal } from '@/types';
 import toast from 'react-hot-toast';
+import { useCallback } from 'react';
 
 export default function AdminWithdrawalsPage() {
   const router = useRouter();
@@ -16,30 +16,25 @@ export default function AdminWithdrawalsPage() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Client-side authentication check, falls back to login if not authenticated
-    if (!authService.isAuthenticated()) {
-      router.push('/auth/login');
-      return;
-    }
-    fetchWithdrawals();
-  }, [router]);
-
-  const fetchWithdrawals = async () => {
+  const fetchWithdrawals = useCallback(async () => {
     try {
       const response = await adminService.getPendingWithdrawals();
       setWithdrawals(response.withdrawals);
-    } catch (error: any) {
-      if (error.response?.status === 403) {
+    } catch (error: unknown) {
+      if (isErrorWithResponse(error) && error.response?.status === 403) {
         toast.error('Admin access required');
         router.push('/dashboard');
       } else {
-        toast.error('Failed to load withdrawals');
+        toast.error((isErrorWithResponse(error) && error.response?.data?.error) || 'Failed to load withdrawals');
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchWithdrawals();
+  }, [fetchWithdrawals]);
 
   const handleProcessWithdrawal = async (withdrawalId: string, action: 'approve' | 'reject') => {
     setProcessing(withdrawalId);
@@ -49,8 +44,8 @@ export default function AdminWithdrawalsPage() {
       
       // Remove processed withdrawal from list
       setWithdrawals(prev => prev.filter(w => w.id !== withdrawalId));
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || `Failed to ${action} withdrawal`);
+    } catch (error: unknown) {
+      toast.error((isErrorWithResponse(error) && error.response?.data?.error) || `Failed to ${action} withdrawal`);
     } finally {
       setProcessing(null);
     }
@@ -176,4 +171,12 @@ export default function AdminWithdrawalsPage() {
       </div>
     </div>
   );
+}
+
+interface ErrorWithResponse extends Error {
+  response?: { status?: number; data?: { error?: string } };
+}
+
+function isErrorWithResponse(error: unknown): error is ErrorWithResponse {
+  return (error as ErrorWithResponse).response !== undefined;
 }

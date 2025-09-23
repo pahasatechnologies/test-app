@@ -62,7 +62,7 @@ const Header = () => {
   ];
 
   const isAdmin = user?.role === 'admin';
-
+console.log("IIIIII", isAdmin, user)
   // Show loading state
   if (isLoading) {
     return (
