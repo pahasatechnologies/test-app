@@ -54,7 +54,7 @@ export class AdminService {
     search?: string;
   }) {
     const { page = 1, limit = 20, role, isEmailVerified, search } = filters;
-    
+
     const where: any = {};
     if (role) where.role = role;
     if (isEmailVerified !== undefined) where.isEmailVerified = isEmailVerified;
@@ -227,11 +227,113 @@ export class AdminService {
       }
     });
 
-    return { 
-      id: admin.id, 
-      email: admin.email, 
+    return {
+      id: admin.id,
+      email: admin.email,
       username: admin.username,
       role: admin.role
     };
+  }
+
+
+  // System Configuration Management
+  static async getSystemConfigs(category?: string) {
+    const where: any = {};
+    if (category) where.category = category;
+
+    const configs = await prisma.systemConfig.findMany({
+      where,
+      orderBy: [
+        { category: 'asc' },
+        { key: 'asc' }
+      ]
+    });
+
+    return configs;
+  }
+
+  static async getConfigByKey(key: string) {
+    const config = await prisma.systemConfig.findUnique({
+      where: { key }
+    });
+
+    if (!config) {
+      const defaultValues: Record<string, string> = {
+        'EMAIL_HOST': 'smtp.gmail.com',
+        'EMAIL_PORT': '587',
+        'EMAIL_USER': 'your-email@gmail.com',
+        'EMAIL_PASS': 'your-app-password',
+        'TICKET_PRICE': '100',
+        'FIRST_PRIZE': '2000',
+        'SECOND_PRIZE': '1000',
+        'THIRD_PRIZE': '500',
+        'REFERRAL_PERCENTAGE': '10',
+        'WITHDRAWAL_FEE_PERCENTAGE': '10',
+        'DEPOSIT_ADDRESS': 'your-crypto-deposit-address',
+        'DRAW_DURATION_DAYS': '30',
+        'SURPRISE_DEPOSIT_THRESHOLD': '5'
+      };
+
+      return process.env[key] || defaultValues[key] || null;
+    }
+
+    return config.value;
+  }
+
+  static async updateSystemConfig(key: string, value: string) {
+    const existingConfig = await prisma.systemConfig.findUnique({
+      where: { key }
+    });
+
+    if (!existingConfig) {
+      throw new Error('Configuration key not found');
+    }
+
+    if (!existingConfig.isEditable) {
+      throw new Error('This configuration is not editable');
+    }
+
+    return await prisma.systemConfig.update({
+      where: { key },
+      data: {
+        value,
+        updatedAt: new Date()
+      }
+    });
+  }
+
+  static async initializeDefaultConfigs() {
+    const defaultConfigs = [
+      // Email Configuration
+      { key: 'EMAIL_HOST', value: process.env.EMAIL_HOST || 'smtp.gmail.com', description: 'SMTP server host for email', category: 'email' },
+      { key: 'EMAIL_PORT', value: process.env.EMAIL_PORT || '587', description: 'SMTP server port', category: 'email' },
+      { key: 'EMAIL_USER', value: process.env.EMAIL_USER || 'your-email@gmail.com', description: 'Email address for sending emails', category: 'email' },
+      { key: 'EMAIL_PASS', value: process.env.EMAIL_PASS || 'your-app-password', description: 'Email password or app password', category: 'email' },
+
+      // Lottery Configuration
+      { key: 'TICKET_PRICE', value: process.env.TICKET_PRICE || '100', description: 'Price per lottery ticket', category: 'lottery' },
+      { key: 'FIRST_PRIZE', value: process.env.FIRST_PRIZE || '2000', description: 'First prize amount', category: 'lottery' },
+      { key: 'SECOND_PRIZE', value: process.env.SECOND_PRIZE || '1000', description: 'Second prize amount', category: 'lottery' },
+      { key: 'THIRD_PRIZE', value: process.env.THIRD_PRIZE || '500', description: 'Third prize amount', category: 'lottery' },
+      { key: 'REFERRAL_PERCENTAGE', value: process.env.REFERRAL_PERCENTAGE || '10', description: 'Referral commission percentage', category: 'lottery' },
+      { key: 'WITHDRAWAL_FEE_PERCENTAGE', value: process.env.WITHDRAWAL_FEE_PERCENTAGE || '10', description: 'Withdrawal fee percentage', category: 'lottery' },
+      { key: 'DEPOSIT_ADDRESS', value: process.env.DEPOSIT_ADDRESS || 'your-crypto-deposit-address', description: 'Crypto deposit address', category: 'lottery' },
+
+      // Draw Configuration
+      { key: 'DRAW_DURATION_DAYS', value: process.env.DRAW_DURATION_DAYS || '30', description: 'Duration of each draw in days', category: 'draw' },
+      { key: 'SURPRISE_DEPOSIT_THRESHOLD', value: process.env.SURPRISE_DEPOSIT_THRESHOLD || '5', description: 'Minimum deposits to activate surprise', category: 'draw' }
+    ];
+
+    for (const config of defaultConfigs) {
+      const existing = await prisma.systemConfig.findUnique({
+        where: { key: config.key }
+      });
+
+      if (!existing) {
+        await prisma.systemConfig.create({ data: config });
+      }
+    }
+
+    return { message: 'Default configurations initialized successfully' };
   }
 }

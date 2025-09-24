@@ -23,16 +23,8 @@ export const adminService = {
   },
 
   // Draw Management
-  async getAllDraws(page: number = 1, limit: number = 10): Promise<{
-    draws: DrawHistory[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
-  }> {
-    const response = await api.get(`/admin/draws?page=${page}&limit=${limit}`);
+  async getAllDraws(): Promise<{ draws: DrawHistory[] }> {
+    const response = await api.get(`/admin/draws`);
     return response.data;
   },
 
@@ -59,6 +51,27 @@ export const adminService = {
   // System Configuration
   async getSystemConfig() {
     const response = await api.get('/admin/config');
+    return response.data;
+  },
+
+  async getSystemConfigs(category?: string): Promise<{ configs: any[] }> {
+    const url = category ? `/admin/config/all?category=${encodeURIComponent(category)}` : '/admin/config/all';
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  async getConfigByKey(key: string): Promise<{ key: string; value: string }> {
+    const response = await api.get(`/admin/config/key/${encodeURIComponent(key)}`);
+    return response.data;
+  },
+
+  async updateSystemConfig(key: string, value: string) {
+    const response = await api.put(`/admin/config/key/${encodeURIComponent(key)}`, { value });
+    return response.data;
+  },
+
+  async initializeDefaultConfigs() {
+    const response = await api.post('/admin/config/initialize');
     return response.data;
   },
 

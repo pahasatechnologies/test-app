@@ -166,9 +166,9 @@ export default function AdminDashboard() {
               <Button 
                 variant="ghost" 
                 className="w-full"
-                onClick={() => router.push('/admin/config')}
+                onClick={() => router.push('/admin/settings')}
               >
-                System Config
+                System Settings
               </Button>
             </div>
           </div>

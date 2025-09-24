@@ -134,3 +134,16 @@ model OtpVerification {
   @@map("otp_verifications")
 }
 
+model SystemConfig {
+  id                          String   @id @default(uuid())
+  key                         String   @unique
+  value                       String
+  description                 String?
+  category                    String   @default("general") // email, lottery, draw, system
+  isEditable                  Boolean  @default(true)
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+  
+  @@map("system_configs")
+}
+

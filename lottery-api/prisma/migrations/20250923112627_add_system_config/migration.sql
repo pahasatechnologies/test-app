@@ -100,6 +100,20 @@ CREATE TABLE "public"."otp_verifications" (
     CONSTRAINT "otp_verifications_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "public"."system_configs" (
+    "id" TEXT NOT NULL,
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "description" TEXT,
+    "category" TEXT NOT NULL DEFAULT 'general',
+    "isEditable" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "system_configs_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "public"."users"("email");
 
@@ -114,6 +128,9 @@ CREATE UNIQUE INDEX "wallets_user_id_key" ON "public"."wallets"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "deposits_transaction_id_key" ON "public"."deposits"("transaction_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "system_configs_key_key" ON "public"."system_configs"("key");
 
 -- AddForeignKey
 ALTER TABLE "public"."wallets" ADD CONSTRAINT "wallets_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

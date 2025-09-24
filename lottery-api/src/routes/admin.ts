@@ -7,7 +7,11 @@ import {
   getPendingWithdrawals,
   processWithdrawal,
   getSystemConfig,
-  createAdminUser
+  createAdminUser,
+  getSystemConfigs,
+  updateSystemConfig,
+  getConfigByKey,
+  initializeDefaultConfigs,
 } from '../controllers/adminController';
 import { conductDraw } from '../controllers/drawController';
 
@@ -324,6 +328,146 @@ router.post('/withdrawals/process', processWithdrawal);
  */
 // System Configuration
 router.get('/config', getSystemConfig);
+
+/**
+ * @swagger
+ * /api/admin/config/all:
+ *   get:
+ *     summary: Get all system configurations (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter configurations by category
+ *     responses:
+ *       200:
+ *         description: A list of all system configurations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 configs:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/SystemConfig'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden, only administrators can access this resource
+ *       500:
+ *         description: Server error
+ */
+router.get('/config/all', getSystemConfigs);
+
+/**
+ * @swagger
+ * /api/admin/config/key/{key}:
+ *   get:
+ *     summary: Get a system configuration by key (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The configuration key
+ *     responses:
+ *       200:
+ *         description: System configuration value retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 key: { type: string, example: TICKET_PRICE }
+ *                 value: { type: string, example: 5 }
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden, only administrators can access this resource
+ *       404:
+ *         description: Configuration not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/config/key/:key', getConfigByKey);
+
+/**
+ * @swagger
+ * /api/admin/config/key/{key}:
+ *   put:
+ *     summary: Update a system configuration by key (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The configuration key to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ConfigUpdate'
+ *     responses:
+ *       200:
+ *         description: Configuration updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string, example: 'Configuration updated successfully' }
+ *                 config:
+ *                   $ref: '#/components/schemas/SystemConfig'
+ *       400:
+ *         description: Invalid input or configuration not editable
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden, only administrators can update configurations
+ *       404:
+ *         description: Configuration key not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/config/key/:key', updateSystemConfig);
+
+/**
+ * @swagger
+ * /api/admin/config/initialize:
+ *   post:
+ *     summary: Initialize default system configurations (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Default configurations initialized successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Success'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden, only administrators can initialize configurations
+ *       500:
+ *         description: Server error
+ */
+router.post('/config/initialize', initializeDefaultConfigs);
 
 /**
  * @swagger

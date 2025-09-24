@@ -131,3 +131,68 @@ export const createAdminUser = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getSystemConfigs = async (req: AuthRequest, res: Response) => {
+  try {
+    const { category } = req.query;
+    const configs = await AdminService.getSystemConfigs(category as string);
+    res.json({ configs });
+  } catch (error) {
+    console.error('Get system configs error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getConfigByKey = async (req: AuthRequest, res: Response) => {
+  try {
+    const { key } = req.params;
+    const value = await AdminService.getConfigByKey(key);
+    
+    if (value === null) {
+      return res.status(404).json({ error: 'Configuration not found' });
+    }
+    
+    res.json({ key, value });
+  } catch (error) {
+    console.error('Get config by key error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateSystemConfig = async (req: AuthRequest, res: Response) => {
+  try {
+    const { key } = req.params;
+    const { value } = req.body;
+    
+    if (!value && value !== '') {
+      return res.status(400).json({ error: 'Value is required' });
+    }
+    
+    const updatedConfig = await AdminService.updateSystemConfig(key, value.toString());
+    
+    res.json({ 
+      message: 'Configuration updated successfully',
+      config: updatedConfig 
+    });
+  } catch (error) {
+    console.error('Update system config error:', error);
+    if (error instanceof Error) {
+      if (error.message === 'Configuration key not found' || 
+          error.message === 'This configuration is not editable') {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const initializeDefaultConfigs = async (req: AuthRequest, res: Response) => {
+  try {
+    const result = await AdminService.initializeDefaultConfigs();
+    res.json(result);
+  } catch (error) {
+    console.error('Initialize default configs error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+

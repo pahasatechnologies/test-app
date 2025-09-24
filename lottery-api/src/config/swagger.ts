@@ -96,6 +96,27 @@ const options: swaggerJsdoc.Options = {
           properties: {
             message: { type: 'string' }
           }
+        },
+        SystemConfig: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            key: { type: 'string' },
+            value: { type: 'string' },
+            type: { type: 'string', enum: ['string', 'number', 'boolean'] },
+            category: { type: 'string' },
+            isEditable: { type: 'boolean' },
+            description: { type: 'string' }
+          }
+        },
+        ConfigUpdate: {
+          type: 'object',
+          required: [
+            'value'
+          ],
+          properties: {
+            value: { type: 'string', description: 'The new value for the configuration key' }
+          }
         }
       }
     },

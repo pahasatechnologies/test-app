@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Menu, X, DollarSign, Settings, Users, BarChart3, Wallet, ChevronDown } from 'lucide-react';
 import { useAuth, authService } from '@/lib/auth';
 import Button from '@/components/ui/Button';
@@ -10,7 +9,6 @@ import Button from '@/components/ui/Button';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
-  const router = useRouter();
   const { isAuthenticated, user, isLoading } = useAuth();
 
   const handleLogout = async () => {
@@ -141,7 +139,7 @@ console.log("IIIIII", isAdmin, user)
                         onClick={() => setIsAdminDropdownOpen(false)}
                       >
                         <BarChart3 className="h-4 w-4 text-gray-500" />
-                        <span>Admin Panel</span>
+                        <span>Admin Dashboard</span>
                       </Link>
                     </div>
                   </div>

@@ -81,6 +81,16 @@ npm start
 npm run dev
 ```
 
+# 1. Generate Prisma client
+npm run generate
+
+# 2. Apply migrations
+npm run dev:migrate
+
+# 3. Run seed
+npm run db:seed
+
+
 ## 4. Test the API
 
 The server will start on `http://localhost:3000`
