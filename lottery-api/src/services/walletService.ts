@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { calculateWithdrawalAmount, calculateReferralEarnings } from '../utils/helpers';
 import { CONFIG } from '../config/constants';
+import { NotificationService } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -81,6 +82,9 @@ export class WalletService {
           }
         });
       }
+      
+      // Send notification
+      await NotificationService.notifyDeposit(depositData.userId, depositData.amount);
       
       return deposit;
     });

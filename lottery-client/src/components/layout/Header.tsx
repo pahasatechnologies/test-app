@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X, DollarSign, Settings, Users, BarChart3, Wallet, ChevronDown } from 'lucide-react';
 import { useAuth, authService } from '@/lib/auth';
 import Button from '@/components/ui/Button';
+import NotificationBell from '@/components/ui/NotificationBell';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,6 +57,18 @@ const Header = () => {
       href: '/admin/settings',
       icon: Settings,
       description: 'System configuration'
+    },
+    { 
+      name: 'Ticket Types', 
+      href: '/admin/ticket-types',
+      icon: Settings,
+      description: 'Manage ticket types'
+    },
+    { 
+      name: 'Notifications', 
+      href: '/admin/notifications',
+      icon: Settings,
+      description: 'Send notifications'
     }
   ];
 
@@ -152,6 +165,7 @@ console.log("IIIIII", isAdmin, user)
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
+                <NotificationBell />
                 <div className="flex items-center space-x-3">
                   <div className="text-right">
                     <div className="text-sm font-medium">{user?.name}</div>

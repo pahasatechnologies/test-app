@@ -12,11 +12,11 @@ interface AuthRequest extends Request {
 
 export const getTicketInfo = async (req: Request, res: Response) => {
   try {
-    const currentDraw = await TicketService.getActiveDrawInfo();
+    const ticketInfo = await TicketService.getTicketInfo();
     
     res.json({
-      currentDraw,
-      ticketPrice: CONFIG.LOTTERY.TICKET_PRICE,
+      currentDraw: ticketInfo.currentDraw,
+      ticketTypes: ticketInfo.ticketTypes,
       prizes: {
         first: CONFIG.LOTTERY.FIRST_PRIZE,
         second: CONFIG.LOTTERY.SECOND_PRIZE,
@@ -32,20 +32,28 @@ export const getTicketInfo = async (req: Request, res: Response) => {
 export const purchaseTicket = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
-    const { quantity } = req.body;
+    const { quantity, ticketTypeId } = req.body;
     
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
+    }
+    
+    if (!ticketTypeId) {
+      return res.status(400).json({ error: 'Ticket type is required' });
     }
     
     if (!quantity || quantity < 1 || quantity > 10) {
       return res.status(400).json({ error: 'Quantity must be between 1 and 10' });
     }
     
-    const result = await TicketService.purchaseTickets({ userId, quantity });
+    const result = await TicketService.purchaseTickets({ 
+      userId, 
+      ticketTypeId,
+      quantity 
+    });
     
     res.json({
-      message: `Successfully purchased ${quantity} ticket(s)`,
+      message: `Successfully purchased ${quantity} ${result.ticketType.name} ticket(s)`,
       tickets: result.tickets.map((ticket: any) => ({
         id: ticket.id,
         ticketNumber: ticket.ticketNumber,
@@ -59,7 +67,8 @@ export const purchaseTicket = async (req: AuthRequest, res: Response) => {
     
     if (error instanceof Error) {
       if (error.message === 'Insufficient balance' || 
-          error.message === 'Current draw has expired') {
+          error.message === 'Current draw has expired' ||
+          error.message === 'Invalid or inactive ticket type') {
         return res.status(400).json({ error: error.message });
       }
     }
@@ -84,6 +93,10 @@ export const getUserTickets = async (req: AuthRequest, res: Response) => {
       purchasePrice: ticket.purchasePrice.toNumber(),
       status: ticket.status,
       purchasedAt: ticket.purchasedAt,
+      ticketType: ticket.ticketType ? {
+        ...ticket.ticketType,
+        price: ticket.ticketType.price.toNumber()
+      } : null,
       draw: {
         ...ticket.draw,
         prizePool: ticket.draw.prizePool.toNumber()

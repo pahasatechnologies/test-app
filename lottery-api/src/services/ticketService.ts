@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { generateTicketNumber, getDaysRemaining, isDrawExpired } from '../utils/helpers';
 import { CONFIG } from '../config/constants';
+import { NotificationService } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -26,12 +27,41 @@ export class TicketService {
     };
   }
 
+  static async getTicketInfo() {
+    const [currentDraw, ticketTypes] = await Promise.all([
+      this.getActiveDrawInfo(),
+      prisma.ticketType.findMany({
+        where: { isActive: true },
+        orderBy: { price: 'asc' }
+      })
+    ]);
+
+    return {
+      currentDraw,
+      ticketTypes: ticketTypes.map(type => ({
+        ...type,
+        price: type.price.toNumber()
+      }))
+    };
+  }
+
   static async purchaseTickets(purchaseData: {
     userId: string;
+    ticketTypeId: string;
+    ticketTypeId: string;
     quantity: number;
   }) {
     return prisma.$transaction(async (tx: any) => {
-      const ticketPrice = CONFIG.LOTTERY?.TICKET_PRICE || 100;
+      // Get ticket type
+      const ticketType = await tx.ticketType.findUnique({
+        where: { id: purchaseData.ticketTypeId }
+      });
+      
+      if (!ticketType || !ticketType.isActive) {
+        throw new Error('Invalid or inactive ticket type');
+      }
+      
+      const ticketPrice = ticketType.price.toNumber();
       const totalCost = ticketPrice * purchaseData.quantity;
       
       // Check wallet balance
@@ -75,6 +105,7 @@ export class TicketService {
         const ticket = await tx.ticket.create({
           data: {
             userId: purchaseData.userId,
+            ticketTypeId: purchaseData.ticketTypeId,
             ticketNumber: generateTicketNumber(),
             purchasePrice: ticketPrice,
             drawId: draw.id
@@ -100,7 +131,14 @@ export class TicketService {
         }
       });
       
-      return { tickets, totalCost, drawId: draw.id };
+      // Send notification
+      await NotificationService.notifyTicketPurchase(
+        purchaseData.userId,
+        purchaseData.quantity,
+        ticketType.name
+      );
+      
+      return { tickets, totalCost, drawId: draw.id, ticketType };
     });
   }
 
@@ -108,6 +146,7 @@ export class TicketService {
     return prisma.ticket.findMany({
       where: { userId },
       include: {
+        ticketType: true,
         draw: {
           select: {
             id: true,

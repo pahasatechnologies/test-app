@@ -29,13 +29,85 @@ export const lotteryService = {
     return response.data;
   },
 
-  async purchaseTicket(quantity: number = 1) {
-    const response = await api.post('/tickets/purchase', { quantity });
+  async purchaseTicket(ticketTypeId: string, quantity: number = 1) {
+    const response = await api.post('/tickets/purchase', { ticketTypeId, quantity });
     return response.data;
   },
 
   async getUserTickets(): Promise<{ tickets: Ticket[] }> {
     const response = await api.get('/tickets/my-tickets');
+    return response.data;
+  },
+
+  // Ticket Type operations
+  async getTicketTypes(activeOnly: boolean = true): Promise<{ ticketTypes: TicketType[] }> {
+    const response = await api.get(`/ticket-types?active=${activeOnly}`);
+    return response.data;
+  },
+
+  async createTicketType(data: {
+    name: string;
+    description?: string;
+    price: number;
+    color?: string;
+  }) {
+    const response = await api.post('/ticket-types', data);
+    return response.data;
+  },
+
+  async updateTicketType(id: string, data: {
+    name?: string;
+    description?: string;
+    price?: number;
+    color?: string;
+    isActive?: boolean;
+  }) {
+    const response = await api.put(`/ticket-types/${id}`, data);
+    return response.data;
+  },
+
+  async deleteTicketType(id: string) {
+    const response = await api.delete(`/ticket-types/${id}`);
+    return response.data;
+  },
+
+  async getTicketTypeStats() {
+    const response = await api.get('/ticket-types/admin/stats');
+    return response.data;
+  },
+
+  // Notification operations
+  async getNotifications(limit: number = 20): Promise<{ notifications: Notification[] }> {
+    const response = await api.get(`/notifications?limit=${limit}`);
+    return response.data;
+  },
+
+  async getUnreadCount(): Promise<{ unreadCount: number }> {
+    const response = await api.get('/notifications/unread-count');
+    return response.data;
+  },
+
+  async markAsRead(notificationId: string) {
+    const response = await api.put(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+
+  async markAllAsRead() {
+    const response = await api.put('/notifications/mark-all-read');
+    return response.data;
+  },
+
+  async deleteNotification(notificationId: string) {
+    const response = await api.delete(`/notifications/${notificationId}`);
+    return response.data;
+  },
+
+  async sendGlobalNotification(data: {
+    title: string;
+    message: string;
+    type?: 'info' | 'success' | 'warning' | 'error';
+  }) {
+    const response = await api.post('/notifications/admin/global', data);
     return response.data;
   },
 

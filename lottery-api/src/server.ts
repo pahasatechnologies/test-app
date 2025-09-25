@@ -8,6 +8,8 @@ import walletRoutes from './routes/wallet';
 import ticketRoutes from './routes/tickets';
 import drawRoutes from './routes/draws';
 import adminRoutes from './routes/admin';
+import ticketTypeRoutes from './routes/ticketTypes';
+import notificationRoutes from './routes/notifications';
 
 import { CONFIG } from './config/constants';
 import { setupSwagger } from './config/swagger';
@@ -46,6 +48,8 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/draws', drawRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ticket-types', ticketTypeRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

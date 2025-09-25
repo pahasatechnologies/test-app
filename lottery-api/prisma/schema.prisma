@@ -35,6 +35,7 @@ model User {
   deposits         Deposit[]
   withdrawals      Withdrawal[]
   otpVerifications OtpVerification[]
+  notifications    Notification[]
   
   @@map("users")
 }
@@ -77,6 +78,7 @@ model Draw {
 model Ticket {
   id            String   @id @default(uuid())
   userId        String   @map("user_id")
+  ticketTypeId  String?  @map("ticket_type_id")
   ticketNumber  String   @map("ticket_number")
   purchasePrice Decimal  @map("purchase_price") @db.Decimal(10,2)
   drawId        String   @map("draw_id")
@@ -86,6 +88,7 @@ model Ticket {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   draw Draw @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  ticketType TicketType? @relation(fields: [ticketTypeId], references: [id], onDelete: SetNull)
   
   @@map("tickets")
 }
@@ -132,6 +135,38 @@ model OtpVerification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("otp_verifications")
+}
+
+model TicketType {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10,2)
+  color       String   @default("#3B82F6")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  tickets     Ticket[]
+  
+  @@map("ticket_types")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error
+  isRead    Boolean  @default(false) @map("is_read")
+  isGlobal  Boolean  @default(false) @map("is_global")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
 }
 
 model SystemConfig {

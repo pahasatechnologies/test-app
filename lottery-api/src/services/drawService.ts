@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { CONFIG } from '../config/constants';
+import { NotificationService } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -83,6 +84,7 @@ export class DrawService {
             where: { userId: winners.first.userId },
             data: { balance: { increment: prizes.first } }
           });
+          await NotificationService.notifyWin(winners.first.userId, prizes.first, 'First');
         }
 
         if (winners.second) {
@@ -90,6 +92,7 @@ export class DrawService {
             where: { userId: winners.second.userId },
             data: { balance: { increment: prizes.second } }
           });
+          await NotificationService.notifyWin(winners.second.userId, prizes.second, 'Second');
         }
 
         if (winners.third) {
@@ -97,7 +100,11 @@ export class DrawService {
             where: { userId: winners.third.userId },
             data: { balance: { increment: prizes.third } }
           });
+          await NotificationService.notifyWin(winners.third.userId, prizes.third, 'Third');
         }
+        
+        // Send global notification about draw results
+        await NotificationService.notifyDrawResult(draw.id, tickets.length);
 
         results.push({
           drawId: draw.id,

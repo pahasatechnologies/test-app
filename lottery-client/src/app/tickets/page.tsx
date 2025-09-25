@@ -7,7 +7,7 @@ import { ShoppingCart, Clock, Trophy } from 'lucide-react';
 import { lotteryService } from '@/lib/lottery';
 import { formatCurrency, formatCountdown } from '@/lib/utils';
 import Button from '@/components/ui/Button';
-import { TicketInfo, Wallet } from '@/types';
+import { TicketInfo, Wallet, TicketType } from '@/types';
 import toast from 'react-hot-toast';
 
 export default function TicketsPage() {
@@ -15,6 +15,7 @@ export default function TicketsPage() {
   const { data: session, status } = useSession();
   const [ticketInfo, setTicketInfo] = useState<TicketInfo | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [selectedTicketType, setSelectedTicketType] = useState<TicketType | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
@@ -28,6 +29,11 @@ export default function TicketsPage() {
       
       setTicketInfo(ticketData);
       setWallet(walletData.wallet);
+      
+      // Set default ticket type to the first available one
+      if (ticketData.ticketTypes && ticketData.ticketTypes.length > 0) {
+        setSelectedTicketType(ticketData.ticketTypes[0]);
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         const axiosError = error as { response?: { data?: { error: string } } };
@@ -54,9 +60,9 @@ export default function TicketsPage() {
   }, [session, status, router, fetchData]);
 
   const handlePurchase = async () => {
-    if (!wallet || !ticketInfo) return;
+    if (!wallet || !ticketInfo || !selectedTicketType) return;
 
-    const totalCost = ticketInfo.ticketPrice * quantity;
+    const totalCost = selectedTicketType.price * quantity;
     
     if (wallet.balance < totalCost) {
       toast.error('Insufficient balance. Please deposit funds first.');
@@ -65,7 +71,7 @@ export default function TicketsPage() {
 
     setPurchasing(true);
     try {
-      const purchaseResponse = await lotteryService.purchaseTicket(quantity);
+      const purchaseResponse = await lotteryService.purchaseTicket(selectedTicketType.id, quantity);
       toast.success(purchaseResponse.message || `Successfully purchased ${quantity} ticket(s)!`);
       
       // Refresh wallet data
@@ -94,7 +100,7 @@ export default function TicketsPage() {
     );
   }
 
-  const totalCost = (ticketInfo?.ticketPrice || 0) * quantity;
+  const totalCost = (selectedTicketType?.price || 0) * quantity;
   const canPurchase = wallet && wallet.balance >= totalCost;
 
   return (
@@ -156,6 +162,49 @@ export default function TicketsPage() {
             </h2>
 
             <div className="space-y-6">
+              {/* Ticket Type Selection */}
+              {ticketInfo?.ticketTypes && ticketInfo.ticketTypes.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Select Ticket Type
+                  </label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {ticketInfo.ticketTypes.map((ticketType) => (
+                      <button
+                        key={ticketType.id}
+                        onClick={() => setSelectedTicketType(ticketType)}
+                        className={`p-4 rounded-lg border-2 text-left transition-all ${
+                          selectedTicketType?.id === ticketType.id
+                            ? 'border-teal-500 bg-teal-500/10'
+                            : 'border-gray-600 hover:border-gray-500'
+                        }`}
+                        style={{
+                          borderColor: selectedTicketType?.id === ticketType.id ? ticketType.color : undefined
+                        }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-bold text-lg" style={{ color: ticketType.color }}>
+                              {ticketType.name}
+                            </h3>
+                            {ticketType.description && (
+                              <p className="text-sm text-gray-400 mt-1">
+                                {ticketType.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xl font-bold">
+                              {formatCurrency(ticketType.price)}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Number of Tickets
@@ -181,8 +230,16 @@ export default function TicketsPage() {
               <div className="border-t border-gray-700 pt-4">
                 <div className="flex justify-between mb-2">
                   <span>Price per ticket:</span>
-                  <span>{formatCurrency(ticketInfo?.ticketPrice || 0)}</span>
+                  <span>{formatCurrency(selectedTicketType?.price || 0)}</span>
                 </div>
+                {selectedTicketType && (
+                  <div className="flex justify-between mb-2">
+                    <span>Ticket type:</span>
+                    <span style={{ color: selectedTicketType.color }}>
+                      {selectedTicketType.name}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between mb-4">
                   <span className="font-bold">Total Cost:</span>
                   <span className="font-bold text-xl">{formatCurrency(totalCost)}</span>
@@ -192,11 +249,13 @@ export default function TicketsPage() {
               <Button
                 onClick={handlePurchase}
                 loading={purchasing}
-                disabled={!canPurchase}
+                disabled={!canPurchase || !selectedTicketType}
                 className="w-full"
                 size="lg"
               >
-                {!canPurchase ? 'Insufficient Balance' : `Buy ${quantity} Ticket${quantity > 1 ? 's' : ''}`}
+                {!selectedTicketType ? 'Select a ticket type' :
+                 !canPurchase ? 'Insufficient Balance' : 
+                 `Buy ${quantity} ${selectedTicketType.name} Ticket${quantity > 1 ? 's' : ''}`}
               </Button>
 
               {!canPurchase && wallet && (
@@ -269,7 +328,7 @@ export default function TicketsPage() {
                 <ShoppingCart className="w-6 h-6" />
               </div>
               <h3 className="font-bold mb-2">1. Buy Tickets</h3>
-              <p className="text-gray-400 text-sm">Purchase lottery tickets for ${ticketInfo?.ticketPrice || 100} each</p>
+              <p className="text-gray-400 text-sm">Choose from different ticket types with various prices</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center mx-auto mb-3">

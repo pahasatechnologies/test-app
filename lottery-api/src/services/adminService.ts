@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '../utils/helpers';
 import { Draw, User } from '../types';
+import { NotificationService } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -174,6 +175,12 @@ export class AdminService {
             totalWithdrawn: { increment: withdrawal.amount }
           }
         });
+        
+        await NotificationService.notifyWithdrawal(
+          withdrawal.userId,
+          withdrawal.amount.toNumber(),
+          'approved'
+        );
       } else {
         await tx.withdrawal.update({
           where: { id: withdrawalId },
@@ -190,6 +197,12 @@ export class AdminService {
             balance: { increment: withdrawal.amount }
           }
         });
+        
+        await NotificationService.notifyWithdrawal(
+          withdrawal.userId,
+          withdrawal.amount.toNumber(),
+          'rejected'
+        );
       }
 
       return { message: `Withdrawal ${action}d successfully` };

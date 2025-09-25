@@ -26,6 +26,7 @@ export interface Ticket {
   purchasePrice: number;
   status: 'active' | 'expired' | 'winner';
   purchasedAt: string;
+  ticketType?: TicketType;
   draw: {
     id: string;
     startDate: string;
@@ -35,6 +36,17 @@ export interface Ticket {
   };
   isWinner: boolean;
   prizeWon?: number;
+}
+
+export interface TicketType {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  color: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Draw {
@@ -47,13 +59,27 @@ export interface Draw {
 }
 
 export interface TicketInfo {
-  ticketPrice: number;
+  ticketTypes: TicketType[];
   prizes: {
     first: number;
     second: number;
     third: number;
   };
   currentDraw: Draw | null;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  isRead: boolean;
+  isGlobal: boolean;
+  createdAt: string;
+  user?: {
+    fullName: string;
+    email: string;
+  };
 }
 
 export interface DrawHistory {
