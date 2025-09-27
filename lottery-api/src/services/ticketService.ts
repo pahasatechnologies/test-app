@@ -48,7 +48,6 @@ export class TicketService {
   static async purchaseTickets(purchaseData: {
     userId: string;
     ticketTypeId: string;
-    ticketTypeId: string;
     quantity: number;
   }) {
     return prisma.$transaction(async (tx: any) => {
