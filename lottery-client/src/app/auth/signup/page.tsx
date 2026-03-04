@@ -172,7 +172,7 @@ export default function SignupPage() {
                 className="mt-1"
               />
               <label htmlFor="agreeTerms" className="text-sm text-gray-300">
-                I agree to the <a href="/terms" className="text-teal-400 hover:text-teal-300">Terms & Conditions</a> and <a href="/privacy" className="text-teal-400 hover:text-teal-300">Privacy Policy</a> *
+                I agree to the <a href="/terms" className="text-teal-400 hover:text-teal-300">Terms & Conditions</a> and <a href="/privacy" className=\"text-teal-400 hover:text-teal-300">Privacy Policy</a> *
               </label>
             </div>
             {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}

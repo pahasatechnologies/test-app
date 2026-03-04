@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, DollarSign, Settings, Users, BarChart3, Wallet, ChevronDown } from 'lucide-react';
+import { Menu, X, DollarSign, Settings, Users, ChartBar as BarChart3, Wallet, ChevronDown } from 'lucide-react';
 import { useAuth, authService } from '@/lib/auth';
 import Button from '@/components/ui/Button';
 import NotificationBell from '@/components/ui/NotificationBell';
@@ -242,15 +242,6 @@ console.log("IIIIII", isAdmin, user)
                   {item.name}
                 </Link>
               ))}
-              
-              {/* Lottery Pools Link (Mobile) */}
-              <Link
-                href="/lottery-pools"
-                className="block text-teal-400 hover:text-teal-300 py-2 font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                LOTTERY POOLS
-              </Link>
               
               {/* Admin Navigation (Mobile) */}
               {isAuthenticated && isAdmin && (
