@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { isValidEmail, isValidPassword } from '../utils/helpers';
 
 export const validateSignup = (req: Request, res: Response, next: NextFunction) => {
-  const { fullName, email, username, password, confirmPassword } = req.body;
+  const { fullName, email, username, password, confirmPassword, mobileNumber } = req.body;
 
-  if (!fullName || fullName.trim().length < 2) {
-    return res.status(400).json({ error: 'Full name must be at least 2 characters long' });
+  // Split fullName into firstName and lastName
+  const nameParts = fullName.trim().split(' ');
+  if (nameParts.length < 2) {
+    return res.status(400).json({ error: 'Please provide both first name and last name' });
   }
 
   if (!email || !isValidEmail(email)) {

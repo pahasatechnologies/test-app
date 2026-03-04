@@ -123,5 +123,31 @@ export const lotteryService = {
   }> {
     const response = await api.get(`/draws/history?page=${page}&limit=${limit}`);
     return response.data;
+  },
+
+  // Lottery Pool operations
+  async getAvailablePools(): Promise<{ pools: LotteryPool[] }> {
+    const response = await api.get('/lottery-pools/available');
+    return response.data;
+  },
+
+  async joinPool(poolType: string) {
+    const response = await api.post('/lottery-pools/join', { poolType });
+    return response.data;
+  },
+
+  async getUserPoolHistory(): Promise<{ history: PoolParticipation[] }> {
+    const response = await api.get('/lottery-pools/my-history');
+    return response.data;
+  },
+
+  async getUserTclTokens(): Promise<{ tokens: TclTokens }> {
+    const response = await api.get('/lottery-pools/my-tcl-tokens');
+    return response.data;
+  },
+
+  async getUserRefunds(): Promise<{ refunds: RefundTransaction[] }> {
+    const response = await api.get('/lottery-pools/my-refunds');
+    return response.data;
   }
 };

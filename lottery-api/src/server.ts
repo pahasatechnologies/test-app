@@ -10,6 +10,7 @@ import drawRoutes from './routes/draws';
 import adminRoutes from './routes/admin';
 import ticketTypeRoutes from './routes/ticketTypes';
 import notificationRoutes from './routes/notifications';
+import lotteryPoolRoutes from './routes/lotteryPools';
 
 import { CONFIG } from './config/constants';
 import { setupSwagger } from './config/swagger';
@@ -50,6 +51,7 @@ app.use('/api/draws', drawRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ticket-types', ticketTypeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/lottery-pools', lotteryPoolRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

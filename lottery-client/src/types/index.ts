@@ -3,6 +3,7 @@ export interface User {
   fullName: string;
   email: string;
   username: string;
+  mobileNumber?: string;
   role: 'admin' | 'user';
   referralCode: string;
   isEmailVerified: boolean;
@@ -109,6 +110,57 @@ export interface ApiResponse<T = any> {
   message?: string;
   error?: string;
   data?: T;
+}
+
+export interface LotteryPool {
+  id: string;
+  poolType: string;
+  entryFee: number;
+  maxParticipants: number;
+  currentParticipants: number;
+  status: string;
+  firstPrize: number;
+  secondPrize: number;
+  thirdPrize: number;
+  participationFee: number;
+  networkFee: number;
+  refundAmount: number;
+  createdAt: string;
+}
+
+export interface PoolParticipation {
+  id: string;
+  entryAmount: number;
+  participationFee: number;
+  networkFee: number;
+  isWinner: boolean;
+  prizeWon: number;
+  refundProcessed: boolean;
+  joinedAt: string;
+  pool: {
+    poolType: string;
+    entryFee: number;
+    status: string;
+    completedAt?: string;
+  };
+}
+
+export interface TclTokens {
+  balance: number;
+  totalEarned: number;
+  isWithdrawable: boolean;
+}
+
+export interface RefundTransaction {
+  id: string;
+  refundAmount: number;
+  status: string;
+  processedAt?: string;
+  createdAt: string;
+  pool: {
+    poolType: string;
+    entryFee: number;
+  };
 }
 
 export interface AdminUser {

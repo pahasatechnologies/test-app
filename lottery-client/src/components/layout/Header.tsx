@@ -112,6 +112,14 @@ console.log("IIIIII", isAdmin, user)
                 {item.name}
               </Link>
             ))}
+            
+            {/* Lottery Pools Link */}
+            <Link
+              href="/lottery-pools"
+              className="hover:text-blue-400 transition-colors text-sm font-medium bg-teal-600 px-3 py-2 rounded-md"
+            >
+              LOTTERY POOLS
+            </Link>
 
             {/* Admin Dropdown (Only for Admins) */}
             {isAuthenticated && isAdmin && (
@@ -234,6 +242,15 @@ console.log("IIIIII", isAdmin, user)
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Lottery Pools Link (Mobile) */}
+              <Link
+                href="/lottery-pools"
+                className="block text-teal-400 hover:text-teal-300 py-2 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                LOTTERY POOLS
+              </Link>
               
               {/* Admin Navigation (Mobile) */}
               {isAuthenticated && isAdmin && (

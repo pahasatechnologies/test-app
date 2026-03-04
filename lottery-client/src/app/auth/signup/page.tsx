@@ -77,18 +77,29 @@ export default function SignupPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Full Name"
-              name="fullName"
+              label="First Name *"
+              name="firstName"
               type="text"
-              value={formData.fullName}
+              value={formData.firstName}
               onChange={handleChange}
-              error={errors.fullName}
+              error={errors.firstName}
               className="bg-gray-800 border-gray-700 text-white"
               required
             />
             
             <Input
-              label="Email"
+              label="Last Name *"
+              name="lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={handleChange}
+              error={errors.lastName}
+              className="bg-gray-800 border-gray-700 text-white"
+              required
+            />
+            
+            <Input
+              label="Email *"
               name="email"
               type="email"
               value={formData.email}
@@ -99,7 +110,7 @@ export default function SignupPage() {
             />
             
             <Input
-              label="Username"
+              label="Username *"
               name="username"
               type="text"
               value={formData.username}
@@ -110,17 +121,17 @@ export default function SignupPage() {
             />
             
             <Input
-              label="Location (Optional)"
-              name="location"
-              type="text"
-              value={formData.location}
+              label="Mobile Number (Required if you win)"
+              name="mobileNumber"
+              type="tel"
+              value={formData.mobileNumber}
               onChange={handleChange}
               className="bg-gray-800 border-gray-700 text-white"
-              placeholder="Country or City"
+              placeholder="Enter your mobile number"
             />
             
             <Input
-              label="Password"
+              label="Password *"
               name="password"
               type="password"
               value={formData.password}
@@ -131,7 +142,7 @@ export default function SignupPage() {
             />
             
             <Input
-              label="Confirm Password"
+              label="Re-enter Password *"
               name="confirmPassword"
               type="password"
               value={formData.confirmPassword}
@@ -150,6 +161,21 @@ export default function SignupPage() {
               className="bg-gray-800 border-gray-700 text-white"
               placeholder="Enter referral code"
             />
+            
+            <div className="flex items-start space-x-3">
+              <input
+                type="checkbox"
+                id="agreeTerms"
+                name="agreeTerms"
+                checked={formData.agreeTerms}
+                onChange={(e) => setFormData(prev => ({ ...prev, agreeTerms: e.target.checked }))}
+                className="mt-1"
+              />
+              <label htmlFor="agreeTerms" className="text-sm text-gray-300">
+                I agree to the <a href="/terms" className="text-teal-400 hover:text-teal-300">Terms & Conditions</a> and <a href="/privacy" className="text-teal-400 hover:text-teal-300">Privacy Policy</a> *
+              </label>
+            </div>
+            {errors.agreeTerms && <p className="text-red-400 text-sm">{errors.agreeTerms}</p>}
           </div>
 
           <Button

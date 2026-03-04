@@ -19,6 +19,7 @@ model User {
   email            String   @unique
   username         String   @unique
   location         String?
+  mobileNumber     String?  @map("mobile_number")
   password         String
   role             String   @default("user")
   isEmailVerified  Boolean  @default(false) @map("is_email_verified")
@@ -36,6 +37,12 @@ model User {
   withdrawals      Withdrawal[]
   otpVerifications OtpVerification[]
   notifications    Notification[]
+  tclTokens        TclToken[]
+  poolParticipations PoolParticipant[]
+  refundTransactions RefundTransaction[]
+  firstPrizeWins   LotteryPool[] @relation("FirstWinner")
+  secondPrizeWins  LotteryPool[] @relation("SecondWinner")
+  thirdPrizeWins   LotteryPool[] @relation("ThirdWinner")
   
   @@map("users")
 }
@@ -182,3 +189,84 @@ model SystemConfig {
   @@map("system_configs")
 }
 
+model TclToken {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  balance       Decimal  @default(0) @db.Decimal(15,2)
+  totalEarned   Decimal  @default(0) @map("total_earned") @db.Decimal(15,2)
+  isWithdrawable Boolean @default(false) @map("is_withdrawable")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("tcl_tokens")
+}
+
+model LotteryPool {
+  id                  String   @id @default(uuid())
+  poolType            String   @map("pool_type")
+  entryFee            Decimal  @map("entry_fee") @db.Decimal(10,2)
+  maxParticipants     Int      @map("max_participants")
+  currentParticipants Int      @default(0) @map("current_participants")
+  status              String   @default("active")
+  firstWinnerId       String?  @map("first_winner_id")
+  secondWinnerId      String?  @map("second_winner_id")
+  thirdWinnerId       String?  @map("third_winner_id")
+  firstPrize          Decimal  @default(0) @map("first_prize") @db.Decimal(10,2)
+  secondPrize         Decimal  @default(0) @map("second_prize") @db.Decimal(10,2)
+  thirdPrize          Decimal  @default(0) @map("third_prize") @db.Decimal(10,2)
+  participationFee    Decimal  @default(0) @map("participation_fee") @db.Decimal(10,2)
+  networkFee          Decimal  @default(0) @map("network_fee") @db.Decimal(10,2)
+  refundAmount        Decimal  @default(0) @map("refund_amount") @db.Decimal(10,2)
+  drawDate            DateTime? @map("draw_date")
+  createdAt           DateTime @default(now()) @map("created_at")
+  completedAt         DateTime? @map("completed_at")
+  
+  // Relations
+  firstWinner    User? @relation("FirstWinner", fields: [firstWinnerId], references: [id])
+  secondWinner   User? @relation("SecondWinner", fields: [secondWinnerId], references: [id])
+  thirdWinner    User? @relation("ThirdWinner", fields: [thirdWinnerId], references: [id])
+  participants   PoolParticipant[]
+  refunds        RefundTransaction[]
+  
+  @@map("lottery_pools")
+}
+
+model PoolParticipant {
+  id               String   @id @default(uuid())
+  poolId           String   @map("pool_id")
+  userId           String   @map("user_id")
+  entryAmount      Decimal  @map("entry_amount") @db.Decimal(10,2)
+  participationFee Decimal  @map("participation_fee") @db.Decimal(10,2)
+  networkFee       Decimal  @map("network_fee") @db.Decimal(10,2)
+  refundEligible   Boolean  @default(true) @map("refund_eligible")
+  refundProcessed  Boolean  @default(false) @map("refund_processed")
+  isWinner         Boolean  @default(false) @map("is_winner")
+  prizeWon         Decimal? @default(0) @map("prize_won") @db.Decimal(10,2)
+  joinedAt         DateTime @default(now()) @map("joined_at")
+  
+  // Relations
+  pool LotteryPool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([poolId, userId])
+  @@map("pool_participants")
+}
+
+model RefundTransaction {
+  id           String    @id @default(uuid())
+  poolId       String    @map("pool_id")
+  userId       String    @map("user_id")
+  refundAmount Decimal   @map("refund_amount") @db.Decimal(10,2)
+  status       String    @default("pending")
+  processedAt  DateTime? @map("processed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  pool LotteryPool @relation(fields: [poolId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  
+  @@map("refund_transactions")
+}
